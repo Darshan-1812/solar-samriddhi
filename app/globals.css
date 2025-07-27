@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
+    --radius: 0.5rem;
+    --chart-1: 12 76% 61%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 197 37% 24%;
+    --chart-4: 43 74% 66%;
+    --chart-5: 27 87% 67%;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /* Ensure proper spacing for fixed navbar */
+  main {
+    @apply pt-0;
+  }
+}
+
+.glass-card {
+  @apply backdrop-blur-md bg-white/80 dark:bg-gray-900/80 border border-white/20 dark:border-gray-700/20 shadow-xl;
+}
+
+.solar-gradient {
+  background: linear-gradient(135deg, #ffa726 0%, #ff7043 50%, #42a5f5 100%);
+}
+
+/* Leaflet Map Styles */
+.leaflet-container {
+  height: 400px;
+  width: 100%;
+  border-radius: 0.5rem;
+  font-family: inherit;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.leaflet-popup-tip {
+  background: white;
+}
+
+.coordinate-tooltip {
+  background: #ff7043 !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 50% !important;
+  font-weight: bold !important;
+  font-size: 12px !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.coordinate-tooltip::before {
+  display: none !important;
+}
+
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Fix for sections with anchor links */
+section[id] {
+  scroll-margin-top: 80px;
+}
+
+/* Custom scrollbar for coordinates display */
+.max-h-24::-webkit-scrollbar {
+  width: 4px;
+}
+
+.max-h-24::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.max-h-24::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 2px;
+}
+
+.max-h-24::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Enhanced Image loading and hover effects */
+img {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* Hover effects for different contexts */
+.group:hover img {
+  transform: scale(1.1);
+}
+
+.card-image-hover:hover {
+  transform: scale(1.05) rotate(1deg);
+  filter: brightness(1.1) saturate(1.2);
+}
+
+/* Enhanced loading state for images */
+img:not([src]),
+img[src=""],
+img[src*="placeholder.svg"] {
+  background: linear-gradient(90deg, #f0f0f0 0%, #e0e0e0 20%, #d0d0d0 40%, #e0e0e0 60%, #f0f0f0 80%, #f0f0f0 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  position: relative;
+}
+
+/* Dark mode loading state */
+.dark img:not([src]),
+.dark img[src=""],
+.dark img[src*="placeholder.svg"] {
+  background: linear-gradient(90deg, #374151 0%, #4b5563 20%, #6b7280 40%, #4b5563 60%, #374151 80%, #374151 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite linear;
+  border: 1px solid #4b5563;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Remove loading animation when image loads */
+img[src]:not([src=""]):not([src*="placeholder.svg"]) {
+  animation: fadeIn 0.5s ease-in-out;
+  background: none;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Pulse effect for loading images */
+.image-loading {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Hover effects for specific components */
+.hero-image-hover:hover {
+  transform: scale(1.02);
+  filter: brightness(1.1);
+}
+
+.service-card-hover:hover img {
+  transform: scale(1.15);
+  filter: brightness(1.2) contrast(1.1);
+}
+
+.feature-card-hover:hover img {
+  transform: scale(1.1) translateY(-2px);
+  filter: brightness(1.15);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Survey form area type hover effects */
+.area-type-card:hover img {
+  transform: scale(1.08);
+  filter: brightness(1.1) saturate(1.3);
+}
+
+/* Loading skeleton for image containers */
+.image-skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading-skeleton 1.5s infinite;
+  border-radius: 0.5rem;
+}
+
+.dark .image-skeleton {
+  background: linear-gradient(90deg, #374151 25%, #4b5563 50%, #374151 75%);
+  background-size: 200% 100%;
+}
+
+@keyframes loading-skeleton {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Image error state */
+img[alt]:after {
+  content: "🖼️ " attr(alt);
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.75rem;
+  text-align: center;
+  white-space: nowrap;
+  max-width: 90%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Zoom effect on click */
+.image-zoom:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* Stagger animation for multiple images */
+.stagger-animation {
+  animation: staggerFadeIn 0.6s ease-out forwards;
+}
+
+.stagger-animation:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.stagger-animation:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.stagger-animation:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.stagger-animation:nth-child(4) {
+  animation-delay: 0.4s;
+}
+
+@keyframes staggerFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
