@@ -4,7 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { motion } from "framer-motion"
 import Link from "next/link"
-import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle } from "lucide-react"
+import { Mail, Lock, User, Eye, EyeOff, AlertCircle, CheckCircle, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,7 +23,7 @@ export default function RegisterPage() {
   const [acceptTerms, setAcceptTerms] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
-  const { signUp, loading } = useAuth()
+  const { signUp, loading, isSupabaseConfigured } = useAuth()
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -54,11 +54,19 @@ export default function RegisterPage() {
 
     try {
       await signUp(email, password, fullName)
-      setSuccess("Registration successful! Please check your email to verify your account.")
-      toast({
-        title: "Account created!",
-        description: "Please check your email to verify your account.",
-      })
+
+      if (isSupabaseConfigured) {
+        setSuccess("Registration successful! Please check your email to verify your account.")
+        toast({
+          title: "Account created!",
+          description: "Please check your email to verify your account.",
+        })
+      } else {
+        toast({
+          title: "Account created!",
+          description: "Welcome to Solar Samriddhi! Redirecting to dashboard...",
+        })
+      }
     } catch (error: any) {
       console.error("Registration error:", error)
       setError(error.message || "Registration failed. Please try again.")
@@ -82,6 +90,15 @@ export default function RegisterPage() {
             <CardDescription>Create your account to start your solar journey</CardDescription>
           </CardHeader>
           <CardContent>
+            {!isSupabaseConfigured && (
+              <Alert className="mb-4 border-blue-200 bg-blue-50 text-blue-800">
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Demo Mode: Supabase not configured. Registration will work locally for testing.
+                </AlertDescription>
+              </Alert>
+            )}
+
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />

@@ -3,7 +3,7 @@
 import type React from "react"
 import { createContext, useContext, useEffect, useState } from "react"
 import type { User, Session } from "@supabase/supabase-js"
-import { supabase, type Profile } from "@/lib/supabase"
+import { createSupabaseClient, type Profile } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 
 interface AuthContextType {
@@ -16,6 +16,7 @@ interface AuthContextType {
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<Profile>) => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  isSupabaseConfigured: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -25,31 +26,64 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
 
+  // Check if Supabase is configured
+  const supabase = createSupabaseClient()
+  const isSupabaseConfigured = supabase !== null
+
   useEffect(() => {
-    // Get initial session
-    const getInitialSession = async () => {
-      const {
-        data: { session },
-        error,
-      } = await supabase.auth.getSession()
+    setMounted(true)
+  }, [])
 
-      if (error) {
-        console.error("Error getting session:", error)
-      } else {
-        setSession(session)
-        setUser(session?.user ?? null)
+  useEffect(() => {
+    if (!mounted) return
 
-        if (session?.user) {
-          await fetchProfile(session.user.id)
+    // If Supabase is not configured, use mock authentication
+    if (!isSupabaseConfigured) {
+      console.log("Supabase not configured, using mock authentication")
+      // Check for existing mock session
+      try {
+        const savedUser = localStorage.getItem("solar-samriddhi-user")
+        if (savedUser) {
+          const userData = JSON.parse(savedUser)
+          setUser(userData)
+          setProfile(userData)
         }
+      } catch (error) {
+        console.error("Error loading mock user:", error)
+      }
+      setLoading(false)
+      return
+    }
+
+    // Real Supabase authentication
+    const initializeAuth = async () => {
+      try {
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession()
+
+        if (error) {
+          console.error("Error getting session:", error)
+        } else {
+          setSession(session)
+          setUser(session?.user ?? null)
+
+          if (session?.user) {
+            await fetchProfile(session.user.id)
+          }
+        }
+      } catch (error) {
+        console.error("Error initializing auth:", error)
       }
 
       setLoading(false)
     }
 
-    getInitialSession()
+    initializeAuth()
 
     // Listen for auth changes
     const {
@@ -77,9 +111,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
 
     return () => subscription.unsubscribe()
-  }, [router])
+  }, [mounted, isSupabaseConfigured, router])
 
   const fetchProfile = async (userId: string) => {
+    if (!supabase) return
+
     try {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", userId).single()
 
@@ -98,7 +134,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      if (!isSupabaseConfigured) {
+        // Mock signup
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        const mockUser = {
+          id: Date.now().toString(),
+          email: email,
+          full_name: fullName,
+          role: "user",
+          created_at: new Date().toISOString(),
+        }
+        setUser(mockUser as any)
+        setProfile(mockUser as Profile)
+        localStorage.setItem("solar-samriddhi-user", JSON.stringify(mockUser))
+        return
+      }
+
+      const { data, error } = await supabase!.auth.signUp({
         email,
         password,
         options: {
@@ -111,7 +163,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (error) throw error
 
       if (data.user && !data.session) {
-        // Email confirmation required
         throw new Error("Please check your email and click the confirmation link to complete registration.")
       }
     } catch (error) {
@@ -126,7 +177,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      if (!isSupabaseConfigured) {
+        // Mock signin with demo accounts
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        let mockUser
+        if (email === "darshangirase18@gmail.com" && password === "admin123") {
+          mockUser = {
+            id: "admin",
+            email: email,
+            full_name: "Darshan Girase",
+            role: "admin",
+          }
+        } else if (email === "demo@solarsamriddhi.com" && password === "demo123") {
+          mockUser = {
+            id: "demo",
+            email: email,
+            full_name: "Demo User",
+            role: "user",
+          }
+        } else if (email && password && password.length >= 6) {
+          mockUser = {
+            id: Date.now().toString(),
+            email: email,
+            full_name: email.split("@")[0],
+            role: "user",
+          }
+        } else {
+          throw new Error("Invalid email or password")
+        }
+
+        setUser(mockUser as any)
+        setProfile(mockUser as Profile)
+        localStorage.setItem("solar-samriddhi-user", JSON.stringify(mockUser))
+        return
+      }
+
+      const { data, error } = await supabase!.auth.signInWithPassword({
         email,
         password,
       })
@@ -144,7 +231,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true)
 
     try {
-      const { error } = await supabase.auth.signOut()
+      if (!isSupabaseConfigured) {
+        // Mock signout
+        setUser(null)
+        setProfile(null)
+        setSession(null)
+        localStorage.removeItem("solar-samriddhi-user")
+        return
+      }
+
+      const { error } = await supabase!.auth.signOut()
       if (error) throw error
 
       setUser(null)
@@ -162,7 +258,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!user) throw new Error("No user logged in")
 
     try {
-      const { error } = await supabase
+      if (!isSupabaseConfigured) {
+        // Mock update
+        const updatedProfile = { ...profile, ...updates } as Profile
+        setProfile(updatedProfile)
+        localStorage.setItem("solar-samriddhi-user", JSON.stringify(updatedProfile))
+        return
+      }
+
+      const { error } = await supabase!
         .from("profiles")
         .update({
           ...updates,
@@ -172,7 +276,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (error) throw error
 
-      // Refresh profile data
       await fetchProfile(user.id)
     } catch (error) {
       console.error("Update profile error:", error)
@@ -182,7 +285,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPassword = async (email: string) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      if (!isSupabaseConfigured) {
+        // Mock reset
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+        return
+      }
+
+      const { error } = await supabase!.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/auth/reset-password`,
       })
 
@@ -191,6 +300,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Reset password error:", error)
       throw error
     }
+  }
+
+  // Don't render until mounted
+  if (!mounted) {
+    return null
   }
 
   const value = {
@@ -203,6 +317,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signOut,
     updateProfile,
     resetPassword,
+    isSupabaseConfigured,
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
