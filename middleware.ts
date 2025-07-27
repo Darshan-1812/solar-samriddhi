@@ -8,23 +8,10 @@ export async function middleware(request: NextRequest) {
     },
   })
 
-  // Check if Supabase is configured
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-
-  // If Supabase is not configured, skip middleware
-  if (
-    !supabaseUrl ||
-    !supabaseAnonKey ||
-    supabaseUrl.includes("placeholder") ||
-    supabaseAnonKey.includes("placeholder")
-  ) {
-    console.log("Supabase not configured, skipping auth middleware")
-    return response
-  }
-
-  try {
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
       cookies: {
         get(name: string) {
           return request.cookies.get(name)?.value
@@ -64,31 +51,28 @@ export async function middleware(request: NextRequest) {
           })
         },
       },
-    })
+    },
+  )
 
-    // Refresh session if expired - required for Server Components
-    await supabase.auth.getUser()
+  // Refresh session if expired - required for Server Components
+  await supabase.auth.getUser()
 
-    // Protected routes
-    const protectedRoutes = ["/dashboard", "/profile", "/admin"]
-    const authRoutes = ["/auth/login", "/auth/register"]
+  // Protected routes
+  const protectedRoutes = ["/dashboard", "/profile", "/admin"]
+  const authRoutes = ["/auth/login", "/auth/register"]
 
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-    // Redirect authenticated users away from auth pages
-    if (user && authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL("/dashboard", request.url))
-    }
+  // Redirect authenticated users away from auth pages
+  if (user && authRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
+  }
 
-    // Redirect unauthenticated users from protected routes
-    if (!user && protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
-      return NextResponse.redirect(new URL("/auth/login", request.url))
-    }
-  } catch (error) {
-    console.error("Middleware error:", error)
-    // Continue without auth checks if there's an error
+  // Redirect unauthenticated users from protected routes
+  if (!user && protectedRoutes.some((route) => request.nextUrl.pathname.startsWith(route))) {
+    return NextResponse.redirect(new URL("/auth/login", request.url))
   }
 
   return response
