@@ -44,9 +44,32 @@ npm run dev
 ## 🔐 Authentication
 
 ### Demo Accounts:
+
+The application includes a comprehensive authentication system with both Supabase integration and mock authentication fallback:
+
+#### Features:
+- **User Registration & Login**: Complete signup/signin flow
+- **Password Reset**: Email-based password recovery
+- **Role-based Access**: User and Admin roles
+- **Protected Routes**: Automatic redirection for unauthorized access
+- **Profile Management**: Update user information
+
+#### Demo Accounts (Mock Mode):
 - **Admin**: `darshangirase18@gmail.com` / `admin123`
 - **Demo User**: `demo@solarsamriddhi.com` / `demo123`
-- **Registration**: Create new accounts with any valid email
+- **New Registration**: Create accounts with any valid email (6+ char password)
+
+#### Supabase Setup (Optional):
+1. Create a Supabase project at [supabase.com](https://supabase.com)
+2. Copy your project URL and anon key
+3. Update `.env.local` with your credentials:
+   ```
+   NEXT_PUBLIC_SUPABASE_URL=your_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+   ```
+4. Run the SQL setup script in your Supabase SQL editor (see `scripts/supabase-setup.sql`)
+
+If Supabase is not configured, the app automatically falls back to mock authentication for testing.
 
 ## 🌐 Deployment
 

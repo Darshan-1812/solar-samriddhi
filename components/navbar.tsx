@@ -3,19 +3,16 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { Menu, X, User, LogOut } from "lucide-react"
+import { Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useAuth } from "@/components/auth-provider"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { UserMenu } from "@/components/auth/user-menu"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isVisible, setIsVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-
-  const { user, signOut } = useAuth()
 
   const navItems = [
     { name: "Home", href: "/" },
@@ -84,37 +81,7 @@ export function Navbar() {
               {/* Right side */}
               <div className="hidden md:flex items-center space-x-4">
                 <ThemeToggle />
-                {user ? (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm">
-                        <User className="h-4 w-4 mr-2" />
-                        {user.name || user.email.split("@")[0]}
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent>
-                      <DropdownMenuItem asChild>
-                        <Link href="/dashboard">Dashboard</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem asChild>
-                        <Link href="/profile">Profile</Link>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => signOut()}>
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                ) : (
-                  <div className="space-x-2">
-                    <Button variant="ghost" size="sm" asChild>
-                      <Link href="/auth/login">Login</Link>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <Link href="/auth/register">Get Started</Link>
-                    </Button>
-                  </div>
-                )}
+                <UserMenu />
               </div>
 
               {/* Mobile menu button */}
@@ -146,29 +113,9 @@ export function Navbar() {
                     </Link>
                   ))}
                   <div className="px-3 py-2 space-y-2">
-                    {user ? (
-                      <>
-                        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                          <Link href="/dashboard">Dashboard</Link>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="w-full justify-start" asChild>
-                          <Link href="/profile">Profile</Link>
-                        </Button>
-                        <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => signOut()}>
-                          <LogOut className="h-4 w-4 mr-2" />
-                          Sign Out
-                        </Button>
-                      </>
-                    ) : (
-                      <>
-                        <Button variant="ghost" size="sm" className="w-full" asChild>
-                          <Link href="/auth/login">Login</Link>
-                        </Button>
-                        <Button size="sm" className="w-full" asChild>
-                          <Link href="/auth/register">Get Started</Link>
-                        </Button>
-                      </>
-                    )}
+                    <div className="flex justify-center">
+                      <UserMenu />
+                    </div>
                   </div>
                 </motion.div>
               )}

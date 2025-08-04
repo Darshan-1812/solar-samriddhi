@@ -4,11 +4,20 @@ import { motion } from "framer-motion"
 import { Users, BarChart3, Settings, Shield } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Navbar } from "@/components/navbar"
-import { ProtectedRoute } from "@/components/protected-route"
-import { useAuth } from "@/components/auth-provider"
+import { AuthGuard } from "@/components/auth/auth-guard"
+import { authService } from "@/lib/auth-utils"
+import { useState, useEffect } from "react"
 
 export default function AdminPage() {
-  const { user } = useAuth()
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+    }
+    loadUser()
+  }, [])
 
   const adminStats = [
     { title: "Total Users", value: "1,234", icon: Users, color: "text-blue-500" },
@@ -18,7 +27,7 @@ export default function AdminPage() {
   ]
 
   return (
-    <ProtectedRoute requireAdmin={true}>
+    <AuthGuard requireAuth={true} requireAdmin={true}>
       <div className="min-h-screen bg-background">
         <Navbar />
         <main className="pt-16">
@@ -116,6 +125,6 @@ export default function AdminPage() {
           </div>
         </main>
       </div>
-    </ProtectedRoute>
+    </AuthGuard>
   )
 }

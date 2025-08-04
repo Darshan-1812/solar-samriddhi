@@ -9,24 +9,40 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Navbar } from "@/components/navbar"
-import { ProtectedRoute } from "@/components/protected-route"
-import { useAuth } from "@/components/auth-provider"
+import { AuthGuard } from "@/components/auth/auth-guard"
+import { authService } from "@/lib/auth-utils"
 import { useToast } from "@/hooks/use-toast"
 
 export default function ProfilePage() {
-  const { user } = useAuth()
+  const [user, setUser] = useState<any>(null)
   const { toast } = useToast()
   const [isEditing, setIsEditing] = useState(false)
-  const [name, setName] = useState(user?.name || "")
-  const [email, setEmail] = useState(user?.email || "")
+  const [name, setName] = useState("")
+  const [email, setEmail] = useState("")
 
-  const handleSave = () => {
-    // In real app, this would update the user profile
+  useEffect(() => {
+    const loadUser = async () => {
+      const currentUser = await authService.getCurrentUser()
+      setUser(currentUser)
+      setName(currentUser?.name || "")
+      setEmail(currentUser?.email || "")
+    }
+    loadUser()
+  }, [])
+
+  const handleSave = async () => {
+    try {
+      await authService.updateProfile({ name })
+      const updatedUser = await authService.getCurrentUser()
+      setUser(updatedUser)
+      setIsEditing(false)
+    } catch (error) {
+      console.error("Profile update error:", error)
+    }
     toast({
       title: "Profile updated",
       description: "Your profile has been successfully updated.",
     })
-    setIsEditing(false)
   }
 
   const handleCancel = () => {
@@ -36,7 +52,7 @@ export default function ProfilePage() {
   }
 
   return (
-    <ProtectedRoute>
+    <AuthGuard requireAuth={true}>
       <div className="min-h-screen bg-background">
         <Navbar />
         <main className="pt-16">
@@ -165,6 +181,6 @@ export default function ProfilePage() {
           </div>
         </main>
       </div>
-    </ProtectedRoute>
+    </AuthGuard>
   )
 }
